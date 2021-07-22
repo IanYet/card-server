@@ -1,0 +1,22 @@
+{
+  "name": "card-server",
+  "version": "1.0.0",
+  "description": "card server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IanYet/card-server.git"
+  },
+  "author": "IanYet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IanYet/card-server/issues"
+  },
+  "homepage": "https://github.com/IanYet/card-server#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
