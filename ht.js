@@ -97,7 +97,7 @@ const httpStart = (port) => {
         res.setHeader('Content-Type', 'text/html')
         res.sendfile(`${__dirname}/public/index.html`)
     })
-    app.get('/:roomKey', getUserRoomData)
+    app.get('/:roomKey/data', getUserRoomData)
 
     app.listen(port, () => {
         console.log('connected')
