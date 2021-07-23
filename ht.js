@@ -22,9 +22,10 @@ const createRoom = (req, res) => {
         .sort((a, b) => a.ram - b.ram)
         .map((colorObj) => colorObj.color)
 
-    createUser(data[roomKey])
+    initRoomData(data[roomKey])
+    const userId = createUser(data[roomKey])
 
-    res.send({ roomKey: data[roomKey].user })
+    res.send({ roomKey, userId, color: data[roomKey].user[userId].color })
 }
 
 /**
@@ -42,22 +43,45 @@ const joinRoom = (req, res) => {
 
     const userId = createUser(data[roomKey])
 
-    return res.send({ id: userId, user: data[roomKey].user })
+    return res.send({
+        userId,
+        user: Object.keys(data[roomKey].user).map((user) => user.color),
+    })
 }
 
 const getRoomStatus = (req, res) => {
     const room = data[req.params.roomKey]
-    return res.send(room)
+    return res.send({
+        roomStatus: room.status,
+        user: Object.keys(room.user).map((user) => user.color),
+    })
 }
 
 const startGame = (req, res) => {
     const room = data[req.params.roomKey]
-    const userId = req.query.userId
 
     room.status = constant.ROOM_STATUS.gaming
     initRoomData()
+    res.send('ok')
+}
 
-    
+const getUserRoomData = (req, res) => {
+    const room = data[req.params.roomKey]
+    const user = room.user[req.query.userId]
+
+    const result = {
+        cityData: room.data.cityData,
+        playedData: room.data.playedData,
+        ...user,
+        otherUsers: Object.keys(room.user).map((userId) => ({
+            color: room.user[userId].color,
+            score: room.user[userId].score,
+            chessData: room.user[userId].chessData,
+            leftChessData: room.user[userId].leftChessData,
+        })),
+    }
+
+    res.send(result)
 }
 
 const httpStart = (port) => {
@@ -68,7 +92,12 @@ const httpStart = (port) => {
     app.get('/createRoom', createRoom)
     app.get('/joinRoom', joinRoom)
     app.get('/:roomKey/status', getRoomStatus)
-    app.get('/:roomKey')
+    app.get('/:roomKey/start', startGame)
+    app.get('/:roomKey', () => {
+        res.setHeader('Content-Type', 'text/html')
+        res.sendfile(`${__dirname}/public/index.html`)
+    })
+    app.get('/:roomKey', getUserRoomData)
 
     app.listen(port, () => {
         console.log('connected')
