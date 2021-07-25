@@ -8,7 +8,7 @@ const createUser = (room) => {
     const userId = generateKey(room)
     room.user[userId] = {
         userId,
-        score:0,
+        score: 0,
         color: room.colorOrder.pop(),
         up: room.colorOrder.length,
         cardData: [],
@@ -112,8 +112,22 @@ const initRoomData = (room) => {
     }
 }
 
+const deleteRoom = (roomKey, data) => {
+    const wsList = data[roomKey].ws
+
+    wsList.forEach((ws) => {
+        if (ws) {
+            ws.close()
+        }
+    })
+    delete data[roomKey]
+}
+
+// const checkRoom = (room, res) => { }
+
 module.exports = {
     generateKey,
     createUser,
     initRoomData,
+    deleteRoom,
 }

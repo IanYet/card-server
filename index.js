@@ -1,3 +1,6 @@
 const httpStart = require('./ht')
+const websocketStart = require('./ws')
 
-httpStart(9000)
+const server = httpStart(9000)
+websocketStart(server)
+
