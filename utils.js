@@ -19,7 +19,10 @@ const createUser = (room) => {
             3: 4,
             4: 3,
         },
+        ready: false,
     }
+
+    room.playOrder.push(room.user[userId].color)
 
     return userId
 }
@@ -108,7 +111,7 @@ const initRoomData = (room) => {
             .map((card) => ({ ram: Math.random(), card: card }))
             .sort((a, b) => a.ram - b.ram)
             .map((cardObj) => cardObj.card),
-        playedData: {},
+        playedData: [],
     }
 }
 
@@ -123,6 +126,69 @@ const deleteRoom = (roomKey, data) => {
     delete data[roomKey]
 }
 
+const dealCard = (cardPool, user, init = false) => {
+    const num = init ? 5 : 1
+
+    if (cardPool.length < num) {
+        cardPool.push(
+            ...[
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0, 1],
+                [0, 1],
+                [0, 1],
+                [0, 1],
+                [0, 1],
+                [0, 2],
+                [0, 2],
+                [0, 2],
+                [0, 2],
+                [0, 2],
+                [1, 0],
+                [1, 0],
+                [1, 0],
+                [1, 0],
+                [1, 0],
+                [1, 1],
+                [1, 1],
+                [1, 1],
+                [1, 1],
+                [1, 1],
+                [1, 2],
+                [1, 2],
+                [1, 2],
+                [1, 2],
+                [1, 2],
+                [2, 0],
+                [2, 0],
+                [2, 0],
+                [2, 0],
+                [2, 0],
+                [2, 1],
+                [2, 1],
+                [2, 1],
+                [2, 1],
+                [2, 1],
+                [2, 2],
+                [2, 2],
+                [2, 2],
+                [2, 2],
+                [2, 2],
+            ]
+                .map((card) => ({ ram: Math.random(), card: card }))
+                .sort((a, b) => a.ram - b.ram)
+                .map((cardObj) => cardObj.card)
+        )
+    }
+
+    for (let i = 0; i < num; i++) {
+        user.cardData.push(cardPool.shift())
+    }
+}
+
 // const checkRoom = (room, res) => { }
 
 module.exports = {
@@ -130,4 +196,5 @@ module.exports = {
     createUser,
     initRoomData,
     deleteRoom,
+    dealCard,
 }

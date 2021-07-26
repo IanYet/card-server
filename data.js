@@ -3,8 +3,10 @@ const constant = {
     ROOM_STATUS: {
         waiting: 'waiting',
         pre_round: 'pre_round',
-        your_turn: 'your_ turn',
-        other_turn: 'other_turn',
+        red_turn: 'red_turn',
+        yellow_turn: 'yellow_turn',
+        blue_turn: 'blue_turn',
+        green_turn: 'green_turn',
         round_end: 'round_end',
         end: 'game_end',
     },

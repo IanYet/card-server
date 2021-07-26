@@ -5,6 +5,7 @@ const {
     createUser,
     initRoomData,
     deleteRoom,
+    dealCard,
 } = require('./utils.js')
 
 /**
@@ -17,6 +18,7 @@ const createRoom = (req, res) => {
     const roomKey = generateKey(data)
     data[roomKey] = {
         colorOrder: null,
+        playOrder: [],
         user: {},
         status: constant.ROOM_STATUS.waiting,
         data: null,
@@ -51,6 +53,10 @@ const joinRoom = (req, res) => {
         return res.send('游戏已经开始')
 
     const userId = createUser(data[roomKey])
+
+    //init play card
+    dealCard(data[roomKey].cardPool, data[roomKey].user[userId], true)
+
     //reset timer
     clearTimeout(data[roomKey].timer)
     data[roomKey].timer = setTimeout(() => {
@@ -102,6 +108,7 @@ const getUserRoomData = (req, res) => {
         otherUsers: Object.keys(room.user)
             .filter((userId) => userId !== req.query.userId)
             .map((userId) => ({
+                up: room.user[userId].up,
                 color: room.user[userId].color,
                 score: room.user[userId].score,
                 chessData: room.user[userId].chessData,
@@ -118,7 +125,122 @@ const postRoundChess = (req, res) => {
 
     room.user[userId].chessData = [...roundChess]
     room.user[userId].leftChessData = { ...leftChess }
+    room.user[userId].ready = true
 
+    res.send('ok')
+
+    if (Object.keys(room.user).every((id) => room.user[id].ready)) {
+        room.status = constant.ROOM_STATUS[`${room.playOrder[0]}_turn`]
+        Object.keys(room.user).forEach((id) => (room.user[id].ready = false))
+
+        const payload = {
+            step: room.status,
+            users: Object.keys(room.user).map((id) => ({
+                color: room.user[id].color,
+                score: room.user[id].score,
+                chessData: room.user[id].chessData,
+                leftChessData: room.user[id].leftChessData,
+            })),
+        }
+
+        room.ws.forEach((ws) =>
+            ws.ws.send(
+                JSON.stringify({
+                    type: constant.WS_TYPE.step,
+                    payload,
+                })
+            )
+        )
+    }
+}
+
+const play = (req, res) => {
+    const room = data[req.params.roomKey]
+    const { userId, floor, card, leftCard, roundChess, cityData } = req.body
+    const user = room.user[userId]
+
+    user.chessData = roundChess
+    user.cardData = leftCard
+
+    room.playedData.push({
+        floor,
+        card,
+    })
+    room.cityData = cityData
+
+    const roundEnd = Object.keys(room.user).every(
+        (id) => room.user[id].chessData.length === 0
+    )
+
+    room.playOrder.push(room.playOrder.shift())
+    room.status = roundEnd
+        ? constant.ROOM_STATUS.round_end
+        : constant.ROOM_STATUS[`${room.playOrder[0]}_turn`]
+
+    const payload = {
+        step: room.status,
+        play: { floor, pos: card, up: user.up },
+        playedData: room.playedData,
+        cityData: room.cityData,
+        users: Object.keys(room.user).map((id) => ({
+            color: room.user[id].color,
+            chessData: room.user[id].chessData,
+            leftChessData: room.user[id].leftChessData,
+        })),
+    }
+
+    room.ws.forEach((ws) => {
+        ws.ws.send(
+            JSON.stringify({
+                type: constant.WS_TYPE.step,
+                payload,
+            })
+        )
+    })
+
+    dealCard(room.cardPool, user)
+    res.send(user.cardData)
+}
+
+const postScore = (req, res) => {
+    const room = data[req.params.roomKey]
+    const { userId, score } = req.body
+    const user = room.user[userId]
+
+    user.score = user.score + parseInt(score)
+    user.ready = true
+
+    res.send('ok')
+    if (Object.keys(room.user).every((id) => room.user[id].ready)) {
+        room.status = Object.keys(user.leftChessData).every(
+            (leftChess) => user.leftChessData[leftChess] === 0
+        )
+            ? constant.ROOM_STATUS.end
+            : constant.ROOM_STATUS.pre_round
+
+        Object.keys(room.user).forEach((id) => (room.user[id].ready = false))
+
+        const payload = {
+            step: room.status,
+            users: Object.keys(room.user).map((id) => ({
+                color: room.user[id].color,
+                score: room.user[id].score,
+            })),
+        }
+
+        room.ws.forEach((ws) =>
+            ws.ws.send(
+                JSON.stringify({
+                    type: constant.WS_TYPE.step,
+                    payload,
+                })
+            )
+        )
+    }
+}
+
+const leaveRoom = (req, res) => {
+    deleteRoom(req.params.roomKey, data)
     res.send('ok')
 }
 
@@ -140,6 +262,10 @@ const httpStart = (port) => {
     app.get('/:roomKey/data', getUserRoomData)
 
     app.post('/:roomKey/postRoundChess', postRoundChess)
+    app.post('/:roomKey/play', play)
+    app.post('/:roomKey/score', postScore)
+
+    app.get('/:roomKey/delete', leaveRoom)
 
     return app.listen(port, () => {
         console.log('connected')

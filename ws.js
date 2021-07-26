@@ -14,15 +14,16 @@ const websocketStart = (server) => {
 
             if (type === constant.WS_TYPE.setColor) {
                 const { userId } = wsData.payload
-                const color = room.user[userId].color
 
-                room.ws.push({ color, ws })
+                room.ws.push({ userId, ws })
             } else if (type === constant.WS_TYPE.chat) {
                 const { userId, message } = wsData.payload
                 const color = room.user[userId].color
 
                 room.ws.forEach((roomWs) => {
-                    roomWs.ws.send(JSON.stringify({ color, message }))
+                    roomWs.ws.send(
+                        JSON.stringify({ type, payload: { color, message } })
+                    )
                 })
             }
         })
