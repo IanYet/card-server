@@ -24,6 +24,7 @@ const createUser = (room) => {
 
     room.playOrder.push(room.user[userId].color)
 
+    dealCard(room.data.cardPool, room.user[userId], true)
     return userId
 }
 

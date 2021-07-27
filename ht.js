@@ -17,7 +17,10 @@ const {
 const createRoom = (req, res) => {
     const roomKey = generateKey(data)
     data[roomKey] = {
-        colorOrder: null,
+        colorOrder: ['red', 'blue', 'green', 'yellow']
+            .map((color) => ({ color: color, ram: Math.random() }))
+            .sort((a, b) => a.ram - b.ram)
+            .map((colorObj) => colorObj.color),
         playOrder: [],
         user: {},
         status: constant.ROOM_STATUS.waiting,
@@ -27,11 +30,6 @@ const createRoom = (req, res) => {
         }, 600000),
         ws: [],
     }
-
-    data[roomKey].colorOrder = ['red', 'blue', 'green', 'yellow']
-        .map((color) => ({ color: color, ram: Math.random() }))
-        .sort((a, b) => a.ram - b.ram)
-        .map((colorObj) => colorObj.color)
 
     initRoomData(data[roomKey])
     const userId = createUser(data[roomKey])
@@ -53,9 +51,6 @@ const joinRoom = (req, res) => {
         return res.send('游戏已经开始')
 
     const userId = createUser(data[roomKey])
-
-    //init play card
-    dealCard(data[roomKey].cardPool, data[roomKey].user[userId], true)
 
     //reset timer
     clearTimeout(data[roomKey].timer)
@@ -162,11 +157,11 @@ const play = (req, res) => {
     user.chessData = roundChess
     user.cardData = leftCard
 
-    room.playedData.push({
+    room.data.playedData.push({
         floor,
         card,
     })
-    room.cityData = cityData
+    room.data.cityData = cityData
 
     const roundEnd = Object.keys(room.user).every(
         (id) => room.user[id].chessData.length === 0
@@ -180,8 +175,8 @@ const play = (req, res) => {
     const payload = {
         step: room.status,
         play: { floor, pos: card, up: user.up },
-        playedData: room.playedData,
-        cityData: room.cityData,
+        playedData: room.data.playedData,
+        cityData: room.data.cityData,
         users: Object.keys(room.user).map((id) => ({
             color: room.user[id].color,
             chessData: room.user[id].chessData,
@@ -198,7 +193,7 @@ const play = (req, res) => {
         )
     })
 
-    dealCard(room.cardPool, user)
+    dealCard(room.data.cardPool, user)
     res.send(user.cardData)
 }
 
@@ -246,6 +241,19 @@ const leaveRoom = (req, res) => {
 
 const httpStart = (port) => {
     const app = express()
+
+    app.use((req, res, next) => {
+        if (req.path !== '/' && !req.path.includes('.')) {
+            res.set({
+                'Access-Control-Allow-Credentials': true, //允许后端发送cookie
+                'Access-Control-Allow-Origin': req.headers.origin || '*', //任意域名都可以访问,或者基于我请求头里面的域
+                'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type', //设置请求头格式和类型
+                'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS', //允许支持的请求方式
+                'Content-Type': 'application/json; charset=utf-8', //默认与允许的文本格式json和编码格式
+            })
+        }
+        req.method === 'OPTIONS' ? res.status(204).end() : next()
+    })
 
     app.use(express.static('public'))
     app.use(express.json())
