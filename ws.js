@@ -11,7 +11,6 @@ const websocketStart = (server) => {
             const wsData = JSON.parse(d)
             const { type, roomKey } = wsData
             const room = data[roomKey]
-            console.log(roomKey, wsData)
 
             if (!room) {
                 ws.send(
