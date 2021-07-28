@@ -14,6 +14,7 @@ const constant = {
         setColor: 'setColor',
         chat: 'chat',
         step: 'step',
+        error: 'error',
     },
 }
 

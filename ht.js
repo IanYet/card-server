@@ -100,15 +100,13 @@ const getUserRoomData = (req, res) => {
         cityData: room.data.cityData,
         playedData: room.data.playedData,
         ...user,
-        otherUsers: Object.keys(room.user)
-            .filter((userId) => userId !== req.query.userId)
-            .map((userId) => ({
-                up: room.user[userId].up,
-                color: room.user[userId].color,
-                score: room.user[userId].score,
-                chessData: room.user[userId].chessData,
-                leftChessData: room.user[userId].leftChessData,
-            })),
+        userList: Object.keys(room.user).map((userId) => ({
+            up: room.user[userId].up,
+            color: room.user[userId].color,
+            score: room.user[userId].score,
+            chessData: room.user[userId].chessData,
+            leftChessData: room.user[userId].leftChessData,
+        })),
     }
 
     res.send(result)
@@ -263,7 +261,7 @@ const httpStart = (port) => {
     app.get('/:roomKey/join', joinRoom)
     app.get('/:roomKey/status', getRoomStatus)
     app.get('/:roomKey/start', startGame)
-    app.get('/:roomKey/:userId', (req, res) => {
+    app.get('/:roomKey', (req, res) => {
         res.setHeader('Content-Type', 'text/html')
         res.sendFile(`${__dirname}/public/index.html`)
     })

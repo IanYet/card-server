@@ -11,6 +11,19 @@ const websocketStart = (server) => {
             const wsData = JSON.parse(d)
             const { type, roomKey } = wsData
             const room = data[roomKey]
+            console.log(roomKey, wsData)
+
+            if (!room) {
+                ws.send(
+                    JSON.stringify({
+                        type: constant.WS_TYPE.error,
+                        payload: {
+                            msg: '房间不存在',
+                        },
+                    })
+                )
+                return ws.close()
+            }
 
             if (type === constant.WS_TYPE.setColor) {
                 const { userId } = wsData.payload
