@@ -263,7 +263,7 @@ const httpStart = (port) => {
     app.get('/:roomKey/join', joinRoom)
     app.get('/:roomKey/status', getRoomStatus)
     app.get('/:roomKey/start', startGame)
-    app.get('/:roomKey', (req, res) => {
+    app.get('/:roomKey/:userId', (req, res) => {
         res.setHeader('Content-Type', 'text/html')
         res.sendFile(`${__dirname}/public/index.html`)
     })
