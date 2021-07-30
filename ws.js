@@ -28,6 +28,14 @@ const websocketStart = (server) => {
                 const { userId } = wsData.payload
 
                 room.ws.push({ userId, ws })
+                ws.send(
+                    JSON.stringify({
+                        type: constant.WS_TYPE.step,
+                        payload: {
+                            step: room.status,
+                        },
+                    })
+                )
             } else if (type === constant.WS_TYPE.chat) {
                 const { userId, message } = wsData.payload
                 const color = room.user[userId].color
