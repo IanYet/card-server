@@ -149,7 +149,8 @@ const postRoundChess = (req, res) => {
 
 const play = (req, res) => {
     const room = data[req.params.roomKey]
-    const { userId, floor, card, leftCard, roundChess, cityData } = req.body
+    const { userId, floor, card, area, leftCard, roundChess, cityData } =
+        req.body
     const user = room.user[userId]
 
     user.chessData = roundChess
@@ -158,6 +159,8 @@ const play = (req, res) => {
     room.data.playedData.push({
         floor,
         card,
+        area,
+        color: room.user[userId].color
     })
     room.data.cityData = cityData
 
@@ -172,7 +175,7 @@ const play = (req, res) => {
 
     const payload = {
         step: room.status,
-        play: { floor, pos: card, up: user.up },
+        play: { floor, card, area, up: user.up },
         playedData: room.data.playedData,
         cityData: room.data.cityData,
         users: Object.keys(room.user).map((id) => ({
