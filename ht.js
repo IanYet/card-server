@@ -100,7 +100,7 @@ const getUserRoomData = (req, res) => {
         cityData: room.data.cityData,
         playedData: room.data.playedData,
         ...user,
-        userList: Object.keys(room.user).map((userId) => ({
+        users: Object.keys(room.user).map((userId) => ({
             up: room.user[userId].up,
             color: room.user[userId].color,
             score: room.user[userId].score,
@@ -160,7 +160,7 @@ const play = (req, res) => {
         floor,
         card,
         area,
-        color: room.user[userId].color
+        color: room.user[userId].color,
     })
     room.data.cityData = cityData
 
