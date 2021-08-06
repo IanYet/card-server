@@ -27,6 +27,8 @@ const websocketStart = (server) => {
             if (type === constant.WS_TYPE.setColor) {
                 const { userId } = wsData.payload
 
+                // if (room.ws.find((wss) => wss.userId === userId)) return
+
                 room.ws.push({ userId, ws })
                 ws.send(
                     JSON.stringify({
