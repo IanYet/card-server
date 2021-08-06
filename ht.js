@@ -121,6 +121,7 @@ const postRoundChess = (req, res) => {
     room.user[userId].ready = true
 
     res.send('ok')
+    console.log(room.playOrder)
 
     if (Object.keys(room.user).every((id) => room.user[id].ready)) {
         room.status = constant.ROOM_STATUS[`${room.playOrder[0]}_turn`]

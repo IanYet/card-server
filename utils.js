@@ -10,7 +10,7 @@ const createUser = (room) => {
         userId,
         score: 0,
         color: room.colorOrder.pop(),
-        up: room.colorOrder.length,
+        up: room.playOrder.length,
         cardData: [],
         chessData: [],
         leftChessData: {
