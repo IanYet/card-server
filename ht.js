@@ -15,6 +15,7 @@ const {
  * @returns
  */
 const createRoom = (req, res) => {
+    console.log(req.sessionID)
     const roomKey = generateKey(data)
     data[roomKey] = {
         colorOrder: ['red', 'blue', 'green', 'yellow']
@@ -57,7 +58,7 @@ const joinRoom = (req, res) => {
     data[roomKey].timer = setTimeout(() => {
         deleteRoom(roomKey, data)
     }, 600000)
-
+//nihao
     return res.send({
         userId,
         color: data[roomKey].user[userId].color,
